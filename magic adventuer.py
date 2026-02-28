@@ -16,7 +16,7 @@ ROOMS = {
         "options": [
             ("Door 1 to hallway", "Hallway"),
                     ],
-        "items": None,
+        "items": [],
     },
     "Magic Room": {
         "title": "Magic Room",
@@ -57,7 +57,9 @@ ROOMS = {
         "options": [
             ("Go to garden", "Garden")
             ],
-        "items": {"name": "Gems", "image": os.path.join(BASE_DIR, "gems.jpg")},
+        "items": [
+    {"name": "Gems", "image": os.path.join(BASE_DIR, "gems.jpg")}
+],
     },
     "Garden": {
         "title": "The Garden of Surprise",
@@ -74,19 +76,19 @@ ROOMS = {
         "title": "The escape door",
         "desc": "The door to escape, but it's locked. Find the combination of plants using the hints around the map..",
         "options": [("Go back to hallway", "Hallway"), ("Use keypad", "Keypad")],
-        "items": None,
+        "items": [],
     },
     "Keypad": {
         "title": "Keypad",
         "desc": "Enter the code from the hints around the map.",
         "options": [("Go back to exit door", "Escape door")],
-        "items": None,
+        "items": [],
     },
     "Outside world": {
         "title": "Outside World",
         "desc": "You've done it, you're free!",
         "options": {},
-        "items": None,
+        "items": [],
     },
 }
 
@@ -95,17 +97,12 @@ satchel = []
 taken = set()
 
 # berkshire
-font_path = os.path.join(
-    "C:\\Users\\techb\\Downloads\\magic_adventure-game-main\\magic_adventure-game-main\\magic-adventurer", 'BerkshireSwash-Regular.ttf'
-)
+font_path = os.path.join(os.path.dirname(__file__), 'BerkshireSwash-Regular.ttf')
 pyglet.font.add_file(str(font_path))
 custom_font_title = "Berkshire Swash"
 
 # waterbrush
-desc_font = 'WaterBrush-Regular.ttf'
-desc_font = os.path.join(
-    "C:\\Users\\techb\\Downloads\\magic_adventure-game-main\\magic_adventure-game-main\\magic-adventurer", 'WaterBrush-Regular.ttf'
-)
+desc_font = os.path.join(os.path.dirname(__file__), 'BerkshireSwash-Regular.ttf')
 pyglet.font.add_file(str(desc_font))
 custom_font_desc = "Water Brush"
 
@@ -135,40 +132,74 @@ def clear(frame):
         w.destroy()
 
 
+# def show_room(room_id):
+#     global current_room
+#     current_room=room_id
+
+#     clear(item_label)
+#     clear(choices_frame)
+#     clear(inv_label)
+
+#     render_items(ROOMS[current_room])
+
+#     room = ROOMS[room_id]
+#     title_label.config(text=room["title"])
+#     desc_label.config(text=room["desc"], font=(custom_font_desc, 25))
+
+#     for b in choices_frame.winfo_children():
+#         b.destroy()
+
+#     for label, next_room in room["options"]:
+#         btn = tk.Button(
+#             choices_frame,
+#             text=label,
+#             font=(custom_font_title, 15),
+#             command=lambda r= next_room: show_room(r), # lambda shows function in one line
+#             width = 32
+#         )
+#         btn.pack(pady=4)
+
+#     if not room["items"] is None:
+#         for item in room["items"]:
+#             btn = tk.Button(
+#                 choices_frame, text=item["name"], font=("Water Brush", 13),command=lambda r=current_room: take_item_if_present(r)
+
+#             )
+#         take_item_if_present(current_room)
+
 def show_room(room_id):
     global current_room
-    current_room=room_id
+    current_room = room_id
 
-    clear(item_label)
-    clear(choices_frame)
-    clear(inv_label)
+    # Clear the UI components before rendering the new room
+    clear(item_label)         # Clear items label
+    clear(choices_frame)      # Clear choices buttons
+    clear(inv_label)          # Clear inventory label
 
-    render_items(current_room)
-
+    # Get the room data from the ROOMS dictionary
     room = ROOMS[room_id]
+
+    # Update room title and description
     title_label.config(text=room["title"])
     desc_label.config(text=room["desc"], font=(custom_font_desc, 25))
 
+    # Render the room options (buttons) before rendering items
     for b in choices_frame.winfo_children():
-        b.destroy()
+        b.destroy()  # Destroy previous buttons (if any)
 
+    # Create new option buttons for the current room
     for label, next_room in room["options"]:
         btn = tk.Button(
             choices_frame,
             text=label,
             font=(custom_font_title, 15),
-            command=lambda r= next_room: show_room(r), # lambda shows function in one line
-            width = 32
+            command=lambda r=next_room: show_room(r),  # Command for navigating
+            width=32
         )
         btn.pack(pady=4)
 
-    if not room["items"] is None:
-        for item in room["items"]:
-            btn = tk.Button(
-                choices_frame, text=item["name"], font=("Water Brush", 13),command=lambda r=current_room: take_item_if_present(r)
-
-            )
-        take_item_if_present(current_room)
+    # Render the items for the current room after options
+    render_items(room)
 
 def load_image(path, size=(72, 72)):
     try:
@@ -186,43 +217,117 @@ def pick_up(item_label):
     satchel.append(item_label)
     show_room()
 
-def render_items(room):
-    # item_ids = room.get("items", [])
+# def render_items(room):
+#     # item_ids = room.get("items", [])
 
-    visible = [i for i in room["items"] if i not in taken]
+#     visible = [i for i in room.get("items", []) if i not in taken]
+
+#     if not visible:
+#         tk.Label(item_label, text="Nothing to see here.").pack(
+#             anchor="center", padx=10, pady=10
+#         )
+#         return
+    
+#     row = tk.Frame(item_label).pack(
+#         anchor="center", padx=10, pady=10  # anchor positions the text either north east south or west etc.
+#     )
+
+#     for i in visible:
+#         img = load_image(i["image"])
+
+#         if img:
+#             b = tk.Button(
+#                 row,
+#                 image=img,
+#                 command=lambda iid=visible[i]: pick_up(item_label),
+#                 cursor="hand2",  # mouse
+#                 bd=0,
+#             )
+#         else:
+#             b = tk.Button(
+#                 row,
+#                 text=visible,
+#                 command=lambda iid=visible[i]: pick_up(item_label),
+#                 cursor="hand2",
+#             )
+
+#         b.pack(side="left", padx=8)
+
+def render_items(room):
+    # Get the list of items in the room, excluding those that are already taken
+    visible = [i for i in room.get("items", []) if i["name"] not in taken]
 
     if not visible:
+        # If no visible items, show a label saying "Nothing to see here."
         tk.Label(item_label, text="Nothing to see here.").pack(
-            anchor = "center", padx = 10, pady = 10
+            anchor="center", padx=10, pady=10
         )
         return
     
-    row = tk.Frame(item_label).pack(
-        anchor= "center", padx = 10, pady= 10 # anchor positions the text either north east south or west etc.
-    )
+    # Create a frame to hold the item buttons
+    row = tk.Frame(item_label)
+    row.pack(anchor="center", padx=10, pady=10)
 
-
+    # Loop through all visible items and create buttons for them
     for i in visible:
-
-        img = load_image(visible[i])
+        img = load_image(i["image"])  # Use the image associated with the item
 
         if img:
+            # If the image is available, create a button with the image
             b = tk.Button(
                 row,
-                image= img,
-                command= lambda iid=visible[i]: pick_up(item_label),
-                cursor="hand2", # mouse
+                image=img,
+                command=lambda iid=i["name"]: pick_up(iid),  # Use the item's name in the lambda
+                cursor="hand2",  # Change mouse cursor to hand
                 bd=0,
             )
         else:
+            # If no image is available, create a button with just the item name
             b = tk.Button(
                 row,
-                text=visible,
-                command=lambda iid=visible[i]: pick_up(item_label),
+                text=i["name"],  # Use the item's name as text on the button
+                command=lambda iid=i["name"]: pick_up(iid),  # Use the item's name in the lambda
                 cursor="hand2",
             )
 
-        b.pack(side="left", padx= 8)
+        b.pack(side="left", padx=8)  # Pack the button inside the row
+
+# def render_items(room):
+#     # Check if the room has items and that 'taken' is a valid set
+#     if room.get("items") is None:
+#         return
+
+#     visible = [i for i in room.get("items", []) if i["name"] not in taken]
+
+#     if not visible:
+#         tk.Label(item_label, text="Nothing to see here.").pack(
+#             anchor="center", padx=10, pady=10
+#         )
+#         return
+
+#     row = tk.Frame(item_label)
+#     row.pack(anchor="center", padx=10, pady=10)
+
+#     for item in visible:
+#         img = load_image(item["image"])
+
+#         if img:
+#             b = tk.Button(
+#                 row,
+#                 image=img,
+#                 command=lambda iid=item["name"]: pick_up(iid),
+#                 cursor="hand2",  # mouse pointer change
+#                 bd=0,
+#             )
+#         else:
+#             b = tk.Button(
+#                 row,
+#                 text=item["name"],
+#                 command=lambda iid=item["name"]: pick_up(iid),
+#                 cursor="hand2",
+#             )
+
+#         b.pack(side="left", padx=8)
 
 
     
